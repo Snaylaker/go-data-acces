@@ -17,6 +17,18 @@ type Album struct {
 	Price  float32
 }
 
+func addAlbum(alb Album) (int64, error) {
+	result, err := db.Exec("INSERT INTO album (title, artist, price) VALUES (?, ?, ?)", alb.Title, alb.Artist, alb.Price)
+	if err != nil {
+		return 0, fmt.Errorf("addAlbum: %v", err)
+	}
+	id, err := result.LastInsertId()
+	if err != nil {
+		return 0, fmt.Errorf("addAlbum: %v", err)
+	}
+	return id, nil
+}
+
 func albumByID(id int64) (Album, error) {
 	var alb Album
 	row := db.QueryRow("SELECT * FROM album WHERE id = ?", id)
@@ -74,4 +86,14 @@ func main() {
 		log.Fatal(err)
 	}
 	fmt.Printf("Album found: %v\n", album)
+
+	albID, err := addAlbum(Album{
+		Title:  "The Modern Sound of Betty Carter",
+		Artist: "Betty Carter",
+		Price:  49.99,
+	})
+	if err != nil {
+		log.Fatal(err)
+	}
+	fmt.Printf("ID of added album: %v\n", albID)
 }
